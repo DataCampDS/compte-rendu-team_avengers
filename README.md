@@ -87,3 +87,77 @@ Le Stacking et LinearSVC offrent les meilleures performances globales.
 - Sélection plus fine des gènes (highly variable genes).
 - Test de pipelines comparant différentes normalisations.
 - Regroupement de classes biologiquement proches et entraînement de modèles hiérarchiques.
+
+---
+
+# Résumé des méthodes et résultats (Sarah)
+
+## Méthode 1 : Stacking SVM + Random Forest
+
+- Prétraitement : Log-normalisation pour réduire l’étendue des données.
+- Augmentation de données : duplication de lignes pour équilibrer les classes.
+* Réduction de dimension : Analyse en Composantes Principales (ACP).
+* Modélisation : Stacking combinant SVM et Random Forest.
+
+Résultat :
+* Balanced accuracy : 0,80
+* Précision par classe : > 0,8
+* Précision pour *Cancer cells* et *NK* : > 0,9
+
+---
+
+## Méthode 2 : SVM avec GridSearchCV
+
+- Prétraitement : Log-normalisation.
+- Augmentation de données : duplication pour équilibrer les classes.
+- Sélection de variables : SelectKBest pour ne conserver que les variables les plus informatives.
+- Modélisation : SVM avec optimisation des hyperparamètres via GridSearchCV.
+
+Résultat :
+* Balanced accuracy : 0,79
+* Précision par classe : > 0,8
+* Précision pour *Cancer cells* et *NK* : > 0,9
+
+---
+
+## Méthode 3 : Random Forest
+
+- Prétraitement : Log-normalisation + normalisation de la taille (*size normalization*).
+- Correction du déséquilibre des classes : via les paramètres du modèle.
+- Sélection de variables : SelectKBest.
+- Modélisation : Random Forest simple.
+
+Résultat :
+* Balanced accuracy : **0,73**
+
+---
+
+## Méthode 4 : Régression Logistique
+
+* **Prétraitement** : Log-normalisation + normalisation de la taille.
+* **Correction du déséquilibre des classes** : via les paramètres du modèle.
+* **Sélection de variables** : `SelectKBest`.
+* **Modélisation** : Régression logistique en deux étapes avec `GridSearchCV`.
+
+**Résultat** :
+
+* Balanced accuracy : **0,86**
+* **Inconvénient** : temps d’entraînement long
+
+---
+
+## Méthode 5 : Random Forest en deux étapes
+
+- Prétraitement : Log-normalisation + augmentation des données.
+- Réduction de dimension : ACP pour extraire les composantes les plus informatives.
+- Modélisation : Random Forest en deux étapes 
+
+Résultat :
+* Balanced accuracy : 0,76
+
+À l’aide des représentations graphiques (ACP, t-SNE, UMAP), on observe qu’il 
+existe un hyperplan capable de séparer la classe Cancer cells des autres. 
+En revanche, la séparation entre les autres classes est moins évidente.
+L’utilisation de méthodes de regroupement géométriques ou basées sur 
+la distance telles que SVM ou KNN.
+
