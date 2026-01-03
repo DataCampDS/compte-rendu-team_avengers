@@ -127,7 +127,7 @@ L'analyse exploratoire révèle que les classes NK_cells et T_cells_CD8+ sont di
 
 ---
 
-# Résumé des méthodes et résultats (Sarah)
+# Résumé des méthodes et résultats 
 
 ## Méthode 1 : Stacking SVM + Random Forest
 
@@ -201,4 +201,4 @@ Résultat :
 existe un hyperplan capable de séparer la classe Cancer cells des autres.
 En revanche, la séparation entre les autres classes est moins évidente.
 L’utilisation de méthodes de regroupement géométriques ou basées sur
-la distance telles que SVM ou KNN.
+la distance telles que SVM ou KNN apparaît pertinent.
