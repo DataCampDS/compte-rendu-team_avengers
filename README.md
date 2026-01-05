@@ -69,7 +69,7 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 
 **Résultat** : 
 
-- Balanced accuracy : **0,82**
+- Balanced accuracy_test après Cross_Vald : **0,82**
 - Pouvoir de prédiction des classes minoritaires : 
  115 cellules de Cancer_cells parmi 118
  22 cellules de NK_cells parmi 43
@@ -81,7 +81,7 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 
 **Résultat** : 
 
-- Balanced accuracy : **0,782**
+- Balanced accuracy_test après Cross_Vald: **0,782**
 - Pouvoir de prédiction des classes minoritaires : 
  114 cellules de Cancer_cells parmi 118
  19 cellules de NK_cells parmi 43
@@ -94,9 +94,9 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 * Réduction de dimension : Analyse en Composantes Principales (ACP).
 * Modélisation : Stacking combinant SVM et Random Forest en premier niveau puis la regression logistique en deuxième niveau.
 
-Résultat :
+**Résultat** :
 
-- Balanced accuracy : **0,81**
+- Balanced accuracy_test après Cross_Vald : **0,81**
 - Pouvoir de prédiction des classes minoritaires : 
  116 cellules de Cancer_cells parmi 118
  19 cellules de NK_cells parmi 43
@@ -110,7 +110,7 @@ Résultat :
 
 **Résultat** : 
 
-- Balanced accuracy : **0,85**
+- Balanced accuracy_test après Cross_Vald : **0,85**
 - Pouvoir de prédiction des classes minoritaires : 
  116 cellules de Cancer_cells parmi 118
  24 cellules de NK_cells parmi 43
@@ -189,18 +189,18 @@ L'analyse exploratoire révèle que les classes NK_cells et T_cells_CD8+ sont di
 
 **Résultat** : 
 - Balanced_acc : **0.88**
+
 ### Résultats synthétiques
 
-| Modèle       | Train Bal. Acc | Train CV (moy.) | Test Bal. Acc | Test CV (moy.) |
-| ------------ | -------------- | --------------- | ------------- | -------------- |
-| Lasso        | 100%           | 83.1%           | 77.6%         | 82.2%          |
-| SVM          | 91.35%         | 70.6%           | 59.3%         | 58%            |
-| XGBoost      | 100%           | 83.2%           | 77.9%         | 78.2%          |
-| RandomForest | -              | -               | -             | -              |
-| LinearSVC    | -              | -               | 81%           | -              |
-| Stacking     | 100%           | 86.9%           | 79.9%         | 81%            |
-
-Le Stacking et LinearSVC offrent les meilleures performances globales.
+| Modèle       | Train Bal. Acc | Train Cross_Vald (moy.) | Test Bal. Acc | Test Ccross_Vald (moy.) |
+| ------------ | -------------- | ------------------------| ------------- | ------------------------|      
+|LogiReg(Lasso)| 100%           | 83.1%                   | 77.6%         | 82.2%                   |
+| XGBoost      | 100%           | 83.2%                   | 77.9%         | 78.2%                   |
+| LightGBM     | 100%           | 88,5                    | 82,9%         | 84,6%                   |
+| Stacking     | 100%           | 86,9%                   | 77,8%-        | 80,9%                   |
+| RandomForest | -              | -                       | 73%           | -                       |
+| RandomForest | -              | -                       | 76%           | -                       |
+| Approche 2   | 100%           | 83.2%                   | 77.9%         | 78.2%                   |
 
 
 
