@@ -69,25 +69,39 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 
 **Résultat** : 
 
-- Balanced accuracy : 0,82
+- Balanced accuracy : **0,82**
 - Pouvoir de prédiction des classes minoritaires : 
  115 cellules de Cancer_cells parmi 118
  22 cellules de NK_cells parmi 43
 
-#### 5.1.b Classidication par XGBoost
+#### 5.1.b Classification par XGBoost
 - Prétraitement : Log-normalisation pour réduire l’étendue des données.
 * Réduction de dimension : Analyse en Composantes Principales (ACP) avec une variance expliquée de 90%.
 * Modélisation : eXtreme Gradient boosting basé sur l'entraînement de plusieurs arbes tout en courigeant les erreurs des précédantes.
 
 **Résultat** : 
 
-- Balanced accuracy : 0,782
+- Balanced accuracy : **0,782**
 - Pouvoir de prédiction des classes minoritaires : 
  114 cellules de Cancer_cells parmi 118
  19 cellules de NK_cells parmi 43
 
+#### 5.1.c Stacking SVM + Random Forest + Lasso 
 
-#### 5.1.c LightGBM : Light Gradient Boosting
+- Prétraitement : Log-normalisation pour réduire l’étendue des données.
+- Augmentation de données : duplication de lignes pour équilibrer les classes.
+
+* Réduction de dimension : Analyse en Composantes Principales (ACP).
+* Modélisation : Stacking combinant SVM et Random Forest en premier niveau puis la regression logistique en deuxième niveau.
+
+Résultat :
+
+- Balanced accuracy : **0,81**
+- Pouvoir de prédiction des classes minoritaires : 
+ 116 cellules de Cancer_cells parmi 118
+ 19 cellules de NK_cells parmi 43
+
+#### 5.1.d LightGBM : Light Gradient Boosting
 
 - Prétraitement : Log-normalisation pour réduire l’étendue des données.
 - Pour LGBM, il performe mieux sans ACP puisqu'il choisit lui même les variables utiles et ignorent les autres.  
@@ -96,24 +110,11 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 
 **Résultat** : 
 
-- Balanced accuracy : 0,85
+- Balanced accuracy : **0,85**
 - Pouvoir de prédiction des classes minoritaires : 
  116 cellules de Cancer_cells parmi 118
  24 cellules de NK_cells parmi 43
 
-#### 5.1.d Stacking SVM + Random Forest
-
-- Prétraitement : Log-normalisation pour réduire l’étendue des données.
-- Augmentation de données : duplication de lignes pour équilibrer les classes.
-
-* Réduction de dimension : Analyse en Composantes Principales (ACP).
-* Modélisation : Stacking combinant SVM et Random Forest.
-
-Résultat :
-
-- Balanced accuracy : 0,80
-- Précision par classe : > 0,8
-- Précision pour _Cancer cells_ et _NK_ : > 0,9
 
 #### 5.1.e Random Forest
 
@@ -124,7 +125,7 @@ Résultat :
 
 **Résultat** :
 
-- Balanced accuracy : 0,73
+- Balanced accuracy : **0,73**
 
 
 #### 5.1.f Random Forest en deux étapes
@@ -135,7 +136,7 @@ Résultat :
 
 **Résultat** :
 
-- Balanced accuracy : 0,76
+- Balanced accuracy : **0,76**
 
 À l’aide des représentations graphiques (ACP, t-SNE, UMAP), on observe qu’il existe un hyperplan capable de séparer la classe Cancer cells des autres.
 En revanche, la séparation entre les autres classes est moins évidente.
@@ -186,7 +187,8 @@ L'analyse exploratoire révèle que les classes NK_cells et T_cells_CD8+ sont di
 - Réduction potentielle du surapprentissage par rapport à un modèle unique 4 classes
 - Architecture modulaire permettant l'optimisation indépendante de chaque stage
 
-
+**Résultat** : 
+- Balanced_acc : **0.88**
 ### Résultats synthétiques
 
 | Modèle       | Train Bal. Acc | Train CV (moy.) | Test Bal. Acc | Test CV (moy.) |
