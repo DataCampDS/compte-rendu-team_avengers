@@ -54,9 +54,138 @@ Objectif : réduire les effets du séquençage et rendre les cellules comparable
   - Injection de bruit.
   - Génération de données synthétiques (GANs).
 
-## 5. Modèles testés et performances
+## 5. Séléction du modèle et approche d'apprentissage 
 
-Plusieurs modèles ont été entraînés et évalués après normalisation, réduction de dimensions et rééquilibrage des classes. Les principaux modèles testés sont : Lasso, SVM, XGBoost, RandomForest, LinearSVC et un ensemble Stacking.
+### 5.1 Approche 1 :
+
+Plusieurs modèles ont été entraînés et évalués après normalisation, réduction de dimensions et rééquilibrage des classes. L'objectif est de choisir le modèle le plus performant en terme de **balanced accuracy**.
+
+Les principaux modèles testés sont : 
+Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et un ensemble Stacking.
+#### 5.1.a Classidication par Régression Logistique avec régularisation L1 (Lasso)
+- Prétraitement : Log-normalisation pour réduire l’étendue des données.
+* Réduction de dimension : Analyse en Composantes Principales (ACP) avec une variance expliquée de 90%.
+* Modélisation : Régression Logistique avec régularisation de Lasso pour la séléction des variables discriminantes.
+
+**Résultat** : 
+
+- Balanced accuracy : 0,82
+- Pouvoir de prédiction des classes minoritaires : 
+ 115 cellules de Cancer_cells parmi 118
+ 22 cellules de NK_cells parmi 43
+
+#### 5.1.b Classidication par XGBoost
+- Prétraitement : Log-normalisation pour réduire l’étendue des données.
+* Réduction de dimension : Analyse en Composantes Principales (ACP) avec une variance expliquée de 90%.
+* Modélisation : eXtreme Gradient boosting basé sur l'entraînement de plusieurs arbes tout en courigeant les erreurs des précédantes.
+
+**Résultat** : 
+
+- Balanced accuracy : 0,782
+- Pouvoir de prédiction des classes minoritaires : 
+ 114 cellules de Cancer_cells parmi 118
+ 19 cellules de NK_cells parmi 43
+
+
+#### 5.1.c LightGBM : Light Gradient Boosting
+
+- Prétraitement : Log-normalisation pour réduire l’étendue des données.
+- Pour LGBM, il performe mieux sans ACP puisqu'il choisit lui même les variables utiles et ignorent les autres.  
+
+* Modélisation : LightGBM est entraîné en apprennant lentement (lr=0.05) pour une meilleure généralisation, en faisant des sous échantillonnage des observations et de variables (subsample, colsample_bytree) pour un anti-overffiting et en ajustant les poids des classes.
+
+**Résultat** : 
+
+- Balanced accuracy : 0,85
+- Pouvoir de prédiction des classes minoritaires : 
+ 116 cellules de Cancer_cells parmi 118
+ 24 cellules de NK_cells parmi 43
+
+#### 5.1.d Stacking SVM + Random Forest
+
+- Prétraitement : Log-normalisation pour réduire l’étendue des données.
+- Augmentation de données : duplication de lignes pour équilibrer les classes.
+
+* Réduction de dimension : Analyse en Composantes Principales (ACP).
+* Modélisation : Stacking combinant SVM et Random Forest.
+
+Résultat :
+
+- Balanced accuracy : 0,80
+- Précision par classe : > 0,8
+- Précision pour _Cancer cells_ et _NK_ : > 0,9
+
+#### 5.1.e Random Forest
+
+- Prétraitement : Log-normalisation + normalisation de la taille (_size normalization_).
+- Correction du déséquilibre des classes : via les paramètres du modèle.
+- Sélection de variables : SelectKBest.
+- Modélisation : Random Forest simple.
+
+**Résultat** :
+
+- Balanced accuracy : 0,73
+
+
+#### 5.1.f Random Forest en deux étapes
+
+- Prétraitement : Log-normalisation + augmentation des données.
+- Réduction de dimension : ACP pour extraire les composantes les plus informatives.
+- Modélisation : Random Forest en deux étapes
+
+**Résultat** :
+
+- Balanced accuracy : 0,76
+
+À l’aide des représentations graphiques (ACP, t-SNE, UMAP), on observe qu’il existe un hyperplan capable de séparer la classe Cancer cells des autres.
+En revanche, la séparation entre les autres classes est moins évidente.
+L’utilisation de méthodes de regroupement géométriques ou basées sur
+la distance telles que SVM ou KNN apparaît pertinent.
+
+### 5.2 Approche 2 : Approche en deux étapes avec modèles séparés
+### 5.2.a Approche en deux étapes avec modèles séparés
+
+L'analyse exploratoire révèle que les classes NK_cells et T_cells_CD8+ sont difficiles à distinguer des autres classes mais potentiellement plus faciles à séparer entre elles. Cette observation motive une approche hiérarchique en deux étapes.
+
+#### 5.2.b Architecture du modèle
+
+**Stage 1 : Modèle à 3 classes (Merged Model)**
+
+- Fusion des classes NK_cells et T_cells_CD8+ en une seule classe : "NK_or_T_cells_CD8+"
+- Classification entre : B_cells, Monocytes, NK_or_T_cells_CD8+
+- Pipeline : Normalisation → Filtrage gènes (variance ≥ 0.2) → PCA (60 composantes) → Stacking Classifier
+
+**Stage 2 : Modèle binaire (Binary Model)**
+
+- Classification fine entre NK_cells et T_cells_CD8+ uniquement
+- Pipeline : Normalisation → Filtrage gènes (variance ≥ 0.8) → PCA (80% variance) → Stacking Classifier
+
+#### 5.2.c Stratégie de prédiction
+
+1. Tous les échantillons passent par le Stage 1
+2. Les échantillons prédits comme B_cells ou Monocytes conservent cette prédiction
+3. Les échantillons prédits comme "NK_or_T_cells_CD8+" sont envoyés au Stage 2 pour distinction fine
+
+#### 5.2.d Configuration technique
+
+**Stacking Classifier (identique pour les deux stages)** :
+
+- Estimateurs de base : Random Forest (200 arbres), SVM (RBF kernel), KNN (15 voisins)
+- Meta-estimateur : Régression Logistique
+
+**Paramètres optimisables via Grid Search** :
+
+- Seuils de variance pour filtrage des gènes (Stage 1 et 2)
+- Nombre de composantes PCA (Stage 1 et 2)
+- Hyperparamètres des modèles de base (n_estimators, max_depth, C, n_neighbors)
+
+#### 5.2.e Avantages de l'approche
+
+- Spécialisation de chaque modèle sur un sous-problème plus simple
+- Filtrage de gènes adapté à chaque étape (différents seuils de variance)
+- Réduction potentielle du surapprentissage par rapport à un modèle unique 4 classes
+- Architecture modulaire permettant l'optimisation indépendante de chaque stage
+
 
 ### Résultats synthétiques
 
@@ -71,134 +200,6 @@ Plusieurs modèles ont été entraînés et évalués après normalisation, réd
 
 Le Stacking et LinearSVC offrent les meilleures performances globales.
 
-## 6. Prochaines étapes
 
-- Approches avancées d’augmentation de données (GANs, bruit, bootstrapping).
-- Sélection plus fine des gènes (highly variable genes).
-- Test de pipelines comparant différentes normalisations.
-- Regroupement de classes biologiquement proches et entraînement de modèles hiérarchiques.
 
----
 
-## 7. Essais : Approche en deux étapes avec modèles séparés
-
-### 7.1 Approche en deux étapes avec modèles séparés
-
-L'analyse exploratoire révèle que les classes NK_cells et T_cells_CD8+ sont difficiles à distinguer des autres classes mais potentiellement plus faciles à séparer entre elles. Cette observation motive une approche hiérarchique en deux étapes.
-
-#### Architecture du modèle
-
-**Stage 1 : Modèle à 3 classes (Merged Model)**
-
-- Fusion des classes NK_cells et T_cells_CD8+ en une seule classe : "NK_or_T_cells_CD8+"
-- Classification entre : B_cells, Monocytes, NK_or_T_cells_CD8+
-- Pipeline : Normalisation → Filtrage gènes (variance ≥ 0.2) → PCA (60 composantes) → Stacking Classifier
-
-**Stage 2 : Modèle binaire (Binary Model)**
-
-- Classification fine entre NK_cells et T_cells_CD8+ uniquement
-- Pipeline : Normalisation → Filtrage gènes (variance ≥ 0.8) → PCA (80% variance) → Stacking Classifier
-
-#### Stratégie de prédiction
-
-1. Tous les échantillons passent par le Stage 1
-2. Les échantillons prédits comme B_cells ou Monocytes conservent cette prédiction
-3. Les échantillons prédits comme "NK_or_T_cells_CD8+" sont envoyés au Stage 2 pour distinction fine
-
-#### Configuration technique
-
-**Stacking Classifier (identique pour les deux stages)** :
-
-- Estimateurs de base : Random Forest (200 arbres), SVM (RBF kernel), KNN (15 voisins)
-- Meta-estimateur : Régression Logistique
-
-**Paramètres optimisables via Grid Search** :
-
-- Seuils de variance pour filtrage des gènes (Stage 1 et 2)
-- Nombre de composantes PCA (Stage 1 et 2)
-- Hyperparamètres des modèles de base (n_estimators, max_depth, C, n_neighbors)
-
-#### Avantages de l'approche
-
-- Spécialisation de chaque modèle sur un sous-problème plus simple
-- Filtrage de gènes adapté à chaque étape (différents seuils de variance)
-- Réduction potentielle du surapprentissage par rapport à un modèle unique 4 classes
-- Architecture modulaire permettant l'optimisation indépendante de chaque stage
-
----
-
-# Résumé des méthodes et résultats 
-
-## Méthode 1 : Stacking SVM + Random Forest
-
-- Prétraitement : Log-normalisation pour réduire l’étendue des données.
-- Augmentation de données : duplication de lignes pour équilibrer les classes.
-
-* Réduction de dimension : Analyse en Composantes Principales (ACP).
-* Modélisation : Stacking combinant SVM et Random Forest.
-
-Résultat :
-
-- Balanced accuracy : 0,80
-- Précision par classe : > 0,8
-- Précision pour _Cancer cells_ et _NK_ : > 0,9
-
----
-
-## Méthode 2 : SVM avec GridSearchCV
-
-- Prétraitement : Log-normalisation.
-- Augmentation de données : duplication pour équilibrer les classes.
-- Sélection de variables : SelectKBest pour ne conserver que les variables les plus informatives.
-- Modélisation : SVM avec optimisation des hyperparamètres via GridSearchCV.
-
-Résultat :
-
-- Balanced accuracy : 0,79
-- Précision par classe : > 0,8
-- Précision pour _Cancer cells_ et _NK_ : > 0,9
-
----
-
-## Méthode 3 : Random Forest
-
-- Prétraitement : Log-normalisation + normalisation de la taille (_size normalization_).
-- Correction du déséquilibre des classes : via les paramètres du modèle.
-- Sélection de variables : SelectKBest.
-- Modélisation : Random Forest simple.
-
-Résultat :
-
-- Balanced accuracy : **0,73**
-
----
-
-## Méthode 4 : Régression Logistique
-
-- **Prétraitement** : Log-normalisation + normalisation de la taille.
-- **Correction du déséquilibre des classes** : via les paramètres du modèle.
-- **Sélection de variables** : `SelectKBest`.
-- **Modélisation** : Régression logistique en deux étapes avec `GridSearchCV`.
-
-**Résultat** :
-
-- Balanced accuracy : **0,86**
-- **Inconvénient** : temps d’entraînement long
-
----
-
-## Méthode 5 : Random Forest en deux étapes
-
-- Prétraitement : Log-normalisation + augmentation des données.
-- Réduction de dimension : ACP pour extraire les composantes les plus informatives.
-- Modélisation : Random Forest en deux étapes
-
-Résultat :
-
-- Balanced accuracy : 0,76
-
-À l’aide des représentations graphiques (ACP, t-SNE, UMAP), on observe qu’il
-existe un hyperplan capable de séparer la classe Cancer cells des autres.
-En revanche, la séparation entre les autres classes est moins évidente.
-L’utilisation de méthodes de regroupement géométriques ou basées sur
-la distance telles que SVM ou KNN apparaît pertinent.
