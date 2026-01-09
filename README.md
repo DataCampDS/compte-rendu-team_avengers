@@ -118,10 +118,10 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 
 #### 5.1.e Random Forest
 
-- Prétraitement : Log-normalisation + normalisation de la taille (_size normalization_).
-- Correction du déséquilibre des classes : via les paramètres du modèle.
-- Sélection de variables : SelectKBest.
-- Modélisation : Random Forest simple.
+- Prétraitement : Log-normalisation + normalisation de la taille (_size normalization_)
+- Correction du déséquilibre des classes : via les paramètres du modèle
+- Sélection de variables : SelectKBest
+- Modélisation : Random Forest simple
 
 **Résultat** :
 
@@ -130,13 +130,34 @@ Logistic regression (Lasso), SVM, XGBoost, RandomForest, LinearSVC, LightGBM et 
 
 #### 5.1.f Random Forest en deux étapes
 
-- Prétraitement : Log-normalisation + augmentation des données.
-- Réduction de dimension : ACP pour extraire les composantes les plus informatives.
+- Prétraitement : Log-normalisation + augmentation des données
+- Réduction de dimension : ACP pour extraire les composantes les plus informatives
 - Modélisation : Random Forest en deux étapes
 
 **Résultat** :
 
 - Balanced accuracy : **0,76**
+
+#### 5.1.g Régression logistique (cancer cells vs autre) + lgbMClassifier (NK vs T) + SVC (T CD+4 vs T CD+8)
+
+- Prétraitement : Log-normalisation + Normalisation de la taille des librairies (size normalization)
+- Sélection de variables : highly variable gene
+- Modélisation : Classification en plusieurs étapes
+
+**Résultat** :
+
+- Balanced accuracy : **0,89**
+
+ #### 5.1.h Régression logistique (cancer cells vs autre) + lgbMClassifier (NK vs T) + lgbMClassifier (T CD+4 vs T CD+8)
+
+- Prétraitement : Log-normalisation + Normalisation de la taille des librairies (size normalization)
+- Sélection de variables : highly variable gene
+- Modélisation : Classification en plusieurs étapes
+
+**Résultat** :
+
+- Balanced accuracy : **0,88**
+
 
 À l’aide des représentations graphiques (ACP, t-SNE, UMAP), on observe qu’il existe un hyperplan capable de séparer la classe Cancer cells des autres.
 En revanche, la séparation entre les autres classes est moins évidente.
