@@ -4,6 +4,11 @@
 
 ---
 
+Notes finales : 
+
+- Guérin : 17.5/20
+- Sarah : 17.5/20
+- Fatima-Zahra : 17.5/20
 
 # suivi-datacamp
 
